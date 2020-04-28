@@ -1,4 +1,4 @@
-// This jenkinsfile is used for the local (Virtualbox) CI/CD servers.
+// This jenkinsfile is used to run CI/CD on my local (Windows) box, no VM's needed.
 
 pipeline {
 
@@ -40,23 +40,34 @@ pipeline {
         // generate the code coverage report for jacoco
         sh './gradlew jacocoTestReport'
       }
+      post {
+          always {
+            junit 'build/test-results/bdd/*.xml'
+          }
+        }
     }
 
     stage('Static Analysis') {
       steps {
         sh './gradlew sonarqube'
+        // wait for sonarqube to finish its analysis
+        sleep 5
+        sh './gradlew checkQualityGate'
       }
     }
 
+
     stage('Deploy to test') {
       steps {
-      sh './gradlew deployToTest'
+      sh './gradlew deployToTestWindowsLocal'
+      // pipenv needs to be installed and on the path for this to work.
+      sh 'pipenv install'
       }
     }
 
     stage('API Tests') {
       steps {
-        sh './gradlew runApiTestsOnUiTest'
+        sh './gradlew runApiTests'
       }
       post {
         always {
@@ -65,11 +76,11 @@ pipeline {
       }
     }
 
-    // We use a different framework for UI tests, Behave, because Python rules
+    // We use a BDD framework for some UI tests, Behave, because Python rules
     // when it comes to experimentation with UI tests.  You can try things and see how they work out.
-    stage('UI Tests') {
+    stage('UI BDD Tests') {
       steps {
-        sh './gradlew runUiTestsOnUITestMachine'
+        sh './gradlew runBehaveTests'
         sh './gradlew generateCucumberReport'
       }
       post {
@@ -79,9 +90,32 @@ pipeline {
       }
     }
 
+    stage('UI Tests') {
+        steps {
+            sh 'cd src/ui_tests/java && ./gradlew clean test'
+        }
+        post {
+            always {
+                junit 'src/ui_tests/java/build/test-results/test/*.xml'
+            }
+        }
+    }
+
     stage('Analyze security of dependencies') {
       steps {
          sh './gradlew dependencyCheckAnalyze'
+      }
+    }
+
+    stage('Testing performance') {
+      steps {
+         sh './gradlew runPerfTests'
+      }
+    }
+
+    stage('Mutation testing') {
+      steps {
+         sh './gradlew pitest'
       }
     }
 

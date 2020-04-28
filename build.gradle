@@ -64,7 +64,7 @@ apply from: "$rootDir/gradle/cucumber_bdd_tests.gradle"
 apply from: "$rootDir/gradle/remote_actions.gradle"
 
 // including our script plugin for running Selenified
-apply from: "$rootDir/gradle/selenified_tests.gradle"
+//apply from: "$rootDir/gradle/selenified_tests.gradle"
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked"
@@ -137,7 +137,11 @@ dependencies {
 }
 
 pitest {
-    targetClasses = ['com.coveros.training.*']  //by default "${project.group}.*"
+    targetClasses =
+            ['com.coveros.training.RegisterServlet',
+             'com.coveros.training.RegisterServletTests',
+             'com.coveros.training.persistence.LibraryUtils',
+             'com.coveros.training.persistence.LibraryUtilsTests']
     threads = 4
     outputFormats = ['XML', 'HTML']
     timestampedReports = false
@@ -218,7 +222,7 @@ sonarqube {
         property "sonar.sources", "src/main/java"
         property "sonar.tests", "src/test/java,src/integration_test/java,src/bdd_test/java"
         property "sonar.java.binaries", "build/classes/java/main"
-        property "sonar.junit.reportPaths", "build/test-results/test/,build/test-results/fastIntegrationTest"
+        property "sonar.junit.reportPaths", "build/test-results/test/,build/test-results/integrate"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/jacoco/jacoco.xml"
     }
 }
@@ -350,6 +354,33 @@ static void checkIfAlive() {
     }
 }
 
+task checkQualityGate() {
+    doLast {
+        isQualityGateGood()
+    }
+}
+
+// throws an exception if the quality gate fails.
+static void isQualityGateGood() {
+    URL url = new URL("http://localhost:9000/api/qualitygates/project_status?projectKey=Demo")
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection()
+    connection.setRequestMethod("GET")
+    connection.connect()
+    int code = connection.getResponseCode()
+    BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+    String strCurrentLine
+    while ((strCurrentLine = br.readLine()) != null) {
+        // ha ha no need to parse JSON!
+        print(strCurrentLine)
+        if (strCurrentLine.startsWith("{\"projectStatus\":{\"status\":\"ERROR\"")) {
+            throw new GradleException("The quality gate for Demo on Sonarqube failed.  Check Sonarqube.")
+        }
+    }
+    if (code != 200) {
+        throw new GradleException("response from Sonar was " + code)
+    }
+}
+
 task runBehaveTests(type: Exec) {
     doFirst {
         checkIfAlive()
@@ -453,7 +484,7 @@ dependencyCheck {
     scanConfigurations = ['default']
     showSummary = false
     autoUpdate = true
-    cveValidForHours = 24 * 30 // about a month.
+    cveValidForHours = 24 * 30 * 12 // about a year.
     format = 'HTML' // options are  (HTML, XML, CSV, JSON, VULN, ALL).
     failBuildOnCVSS = 8 // see https://www.first.org/cvss/specification-document#5-Qualitative-Severity-Rating-Scale
 }
@@ -524,7 +555,7 @@ task runPerfTests(type:Exec) {
     workingDir '.'
 
     //on windows:
-    commandLine 'jmeter.bat', '-n', '-t', 'docs\\50_users_at_once.jmx', '-l', 'test.jtl'
+    commandLine 'jmeter.bat', '-n', '-t', 'docs\\performance_testing\\50_users_at_once.jmx', '-l', 'test.jtl'
 
     //store the output instead of printing to the console:
     standardOutput = new ByteArrayOutputStream()

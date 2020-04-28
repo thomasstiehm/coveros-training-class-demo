@@ -13,12 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "LibraryRegisterBorrowerServlet", urlPatterns = {"/registerborrower"}, loadOnStartup = 1)
 public class LibraryRegisterBorrowerServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 3293380381170679010L;
     private static final Logger logger = LoggerFactory.getLogger(LibraryRegisterBorrowerServlet.class);
     static LibraryUtils libraryUtils = new LibraryUtils();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        final String borrower = request.getParameter("borrower");
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) {
+        final String borrower = StringUtils.makeNotNullable(request.getParameter("borrower"));
         LibraryActionResults libraryActionResults;
 
         if (borrower.isEmpty()) {
