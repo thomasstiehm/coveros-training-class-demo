@@ -15,7 +15,7 @@ software practices.
 Demo consists of a simple web application and tests.  Its goal is to provide 
 an environment suitable for demonstration and practice in valuable development
 techniques.  Some of the techniques exemplified are:
-* [Unit](https://github.com/7ep/demo/blob/master/src/test/java/com/coveros/training/persistence/RegistrationUtilsTests.java) [tests](https://github.com/7ep/demo/blob/master/src/test/java/com/coveros/training/persistence/LibraryUtilsTests.java) developed by [TDD](https://en.wikipedia.org/wiki/Test-driven_development) using [Junit](https://junit.org/junit5/) as a driver and [Mockito](https://site.mockito.org/) for mocks, with coverage reports.
+* [Unit](https://github.com/7ep/demo/blob/master/src/test/java/com/coveros/training/authentication/RegistrationUtilsTests.java) [tests](https://github.com/7ep/demo/blob/master/src/test/java/com/coveros/training/library/LibraryUtilsTests.java) developed by [TDD](https://en.wikipedia.org/wiki/Test-driven_development) using [Junit](https://junit.org/junit5/) as a driver and [Mockito](https://site.mockito.org/) for mocks, with coverage reports.
 * [UI tests](https://github.com/7ep/demo/blob/master/src/ui_tests/behave/features/librarian_ui.feature) using [multiple frameworks](https://github.com/7ep/demo/tree/master/src/ui_tests)
 * [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) [tests](https://github.com/7ep/demo/blob/master/src/bdd_test/resources/library/check_out_a_book.feature) using gherkin
   * [Cucumber](https://docs.cucumber.io/) tests, with reports
@@ -24,6 +24,9 @@ techniques.  Some of the techniques exemplified are:
 * [Database versioning](https://github.com/7ep/demo/blob/master/src/main/resources/db/migration/V2__Rest_of_tables_for_auth_and_library.sql), with [Flyway](https://flywaydb.org/)
 * Security analysis using [DependencyCheck](https://www.owasp.org/index.php/OWASP_Dependency_Check)
 * Hot-swap code with [Gretty](https://github.com/gretty-gradle-plugin/gretty)
+* Enhanced type system using [Checker Framework](https://checkerframework.org/)
+* See its [architecture](https://github.com/7ep/demo/blob/master/docs/dev_notes/architecture.txt)
+
 
 Its essential goals:
 * Just works, any platform.
@@ -191,10 +194,7 @@ For example, to set it all up on a [local Windows box](https://raw.githubusercon
 ---
 
 ##Screenshots:
-![Cucumber report](https://c2.staticflickr.com/8/7881/33202009728_00134731ac_o.png)
-![Feature file](https://c2.staticflickr.com/8/7811/47077017811_ef51957ea5_b.jpg)
 ![Jenkins pipeline](https://c2.staticflickr.com/8/7889/33202009658_11422b7f20_b.jpg)
-![Webapp](https://c2.staticflickr.com/8/7916/47077017561_f190c6f88e_o.png)
 ![Zap attach proxy](https://c2.staticflickr.com/8/7905/33202009438_8f367e20ec_o.png)
 ![SonarQube analysis](https://c2.staticflickr.com/8/7823/33202009548_e678128200_b.jpg)
 ![Running performance tests](https://c2.staticflickr.com/8/7854/47077017751_7e045f68dd_b.jpg)

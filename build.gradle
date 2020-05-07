@@ -45,6 +45,18 @@ plugins {
     // ability to run commands on a remote server, and to copy
     // files to/from servers
     id 'org.hidetake.ssh' version '2.10.1'
+
+    // Provides us the ability to disallow null.
+    // see https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions
+    // see https://github.com/kelloggm/checkerframework-gradle-plugin
+    id "org.checkerframework" version "0.5.0"
+
+}
+
+// Configure our javadoc to include an overview for our project, a
+// document that provides general ideas of the whole.
+javadoc {
+    options.overview = "src/main/javadoc/overview.html"
 }
 
 repositories {
@@ -53,6 +65,8 @@ repositories {
 
 // apply our fancy cucumber reporting program, see https://plugins.gradle.org/plugin/com.github.spacialcircumstances.gradle-cucumber-reporting
 apply plugin: "com.github.spacialcircumstances.gradle-cucumber-reporting"
+
+apply plugin: 'org.checkerframework'
 
 // including our script plugin for running our integration tests
 apply from: "$rootDir/gradle/integration_tests.gradle"
@@ -64,10 +78,25 @@ apply from: "$rootDir/gradle/cucumber_bdd_tests.gradle"
 apply from: "$rootDir/gradle/remote_actions.gradle"
 
 // including our script plugin for running Selenified
-//apply from: "$rootDir/gradle/selenified_tests.gradle"
+apply from: "$rootDir/gradle/selenified_tests.gradle"
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked"
+}
+
+// applying extra criteria to our code - null not allowed
+// Note that adding checkers will add unexpected content to
+// the code, which may conflict with other dependencies.
+
+// For that reason, this is currently commented out.
+
+// Checker is very useful, but due to the conflicts it
+// creates, we bring it to life for a short time just
+// to improve code, and then put it back to sleep.
+checkerFramework {
+//    checkers = [
+//            'org.checkerframework.checker.nullness.NullnessChecker',
+//    ]
 }
 
 // configure jetty to run on port 8080 when we run "./gradlew appRun"
@@ -93,10 +122,10 @@ dependencies {
     providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
 
     // junit, for running unit tests
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
 
     // mockito, for mocking objects in our unit tests
-    testImplementation 'org.mockito:mockito-core:2.28.2'
+    testImplementation 'org.mockito:mockito-core:3.3.3'
 
     // nbvcxz is a tool to determine how robust a password is.  See
     // https://github.com/GoSimpleLLC/nbvcxz
@@ -106,28 +135,28 @@ dependencies {
     // for equals and hashcode are met.  It's very strict.  Because it's very
     // strict, it forces us to create very safe, very solid code.
     // https://mvnrepository.com/artifact/nl.jqno.equalsverifier/equalsverifier
-    testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.1.10'
+    testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.1.13'
 
-    testImplementation 'io.cucumber:cucumber-java:4.8.0'
-    testImplementation 'io.cucumber:cucumber-junit:4.8.0'
+    testImplementation 'io.cucumber:cucumber-java:5.7.0'
+    testImplementation 'io.cucumber:cucumber-junit:5.7.0'
 
     // The commons-lang3 package has some utility classes that are very helpful
     // for those interested in safer coding.  Particularly, the equalsbuilder and hashcodebuilder.
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
 
     // a logging framework, so it becomes easily possible to see what is happening
     // in our code in realtime.
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.12.1'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.12.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.2'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.2'
 
     // The following gives us the ability to use slf4j api calls.
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.12.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.13.2'
 
     // we'll use this as our database
     // https://mvnrepository.com/artifact/com.h2database/h2
-    localDeps group: 'com.h2database', name: 'h2', version: '1.4.199'
+    localDeps group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     // so we can put a copy of h2 in a convenient place
     implementation configurations.localDeps
@@ -138,10 +167,10 @@ dependencies {
 
 pitest {
     targetClasses =
-            ['com.coveros.training.RegisterServlet',
-             'com.coveros.training.RegisterServletTests',
-             'com.coveros.training.persistence.LibraryUtils',
-             'com.coveros.training.persistence.LibraryUtilsTests']
+            ['com.coveros.training.authentication.RegisterServlet',
+             'com.coveros.training.authentication.RegisterServletTests',
+             'com.coveros.training.library.LibraryUtils',
+             'com.coveros.training.library.LibraryUtilsTests']
     threads = 4
     outputFormats = ['XML', 'HTML']
     timestampedReports = false
@@ -354,6 +383,42 @@ static void checkIfAlive() {
     }
 }
 
+
+// This is very similar to "checkIfAlive" function, but here,
+// we just wait until we get a heartbeat.  We don't stop polling
+// until we see that.
+void waitForHeartbeat() {
+    int code = 0
+    while (code != 200){
+        try {
+            URL url = new URL("http://localhost:8080/demo")
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection()
+            connection.setRequestMethod("GET")
+            connection.connect()
+
+            code = connection.getResponseCode()
+
+            if (code != 200) {
+                logger.error("\nServer response is: " +code + ".  Waiting 2 seconds")
+                sleep 2
+            } else {
+                logger.info("\nServer is awake")
+            }
+        } catch (Exception ignored) {
+            logger.error("\nServer failed to connect.  Waiting 2 seconds")
+            sleep 2
+            // ignored.
+            //throw new Exception(ignored.getMessage())
+        }
+    }
+}
+
+task waitForHeartbeatTask() {
+    doLast {
+        waitForHeartbeat()
+    }
+}
+
 task checkQualityGate() {
     doLast {
         isQualityGateGood()
@@ -472,6 +537,14 @@ test {
 
     // Fail the 'test' task on the first test failure
     failFast = true
+
+    debugOptions {
+        // make the following true if you want to attach with a debugger while testing
+        enabled = false
+        port = 4455
+        server = true
+        suspend = true
+    }
 
     // generate a report on coverage
     finalizedBy jacocoTestReport

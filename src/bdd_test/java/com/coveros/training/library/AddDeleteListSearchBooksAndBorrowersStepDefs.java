@@ -1,10 +1,10 @@
 package com.coveros.training.library;
 
-import com.coveros.training.domainobjects.Book;
-import com.coveros.training.domainobjects.Borrower;
-import com.coveros.training.domainobjects.LibraryActionResults;
-import com.coveros.training.domainobjects.Loan;
-import com.coveros.training.persistence.LibraryUtils;
+import com.coveros.training.library.domainobjects.Book;
+import com.coveros.training.library.domainobjects.Borrower;
+import com.coveros.training.library.domainobjects.LibraryActionResults;
+import com.coveros.training.library.domainobjects.Loan;
+import com.coveros.training.persistence.IPersistenceLayer;
 import com.coveros.training.persistence.PersistenceLayer;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -17,8 +17,8 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.coveros.training.persistence.LibraryUtilsTests.generateListOfBooks;
-import static com.coveros.training.persistence.LibraryUtilsTests.generateListOfBorrowers;
+import static com.coveros.training.library.LibraryUtilsTests.generateListOfBooks;
+import static com.coveros.training.library.LibraryUtilsTests.generateListOfBorrowers;
 import static org.junit.Assert.assertEquals;
 
 public class AddDeleteListSearchBooksAndBorrowersStepDefs {
@@ -33,7 +33,7 @@ public class AddDeleteListSearchBooksAndBorrowersStepDefs {
     private LibraryUtils libraryUtils = LibraryUtils.createEmpty();
     private final Date JAN_2ND = Date.valueOf(LocalDate.of(2018, Month.JANUARY, 2));
     private LibraryActionResults libraryActionResults = LibraryActionResults.NULL;
-    private PersistenceLayer pl = new PersistenceLayer();
+    private final IPersistenceLayer pl = new PersistenceLayer();
     private List<Book> allBooks = new ArrayList<>();
     private List<Borrower> allBorrowers = new ArrayList<>();
 
