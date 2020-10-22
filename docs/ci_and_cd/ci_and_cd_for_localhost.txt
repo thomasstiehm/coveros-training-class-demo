@@ -47,11 +47,23 @@ Modify the server.xml in the Tomcat "conf/" directory, at the bottom of the file
 
       <Host name="localhost"  appBase="webapps"
             unpackWARs="true" autoDeploy="true">
-        <Context docBase="/c:/Users/YOUR_NAME_HERE/.jenkins/workspace/Demo/" path="/demoworkspace" />
+        <Context docBase="/c:/Users/YOUR_NAME_HERE/.jenkins/workspace" path="/workspace" />
+
+Additionally, create the previously mentioned workspace directory:
+	mkdir -p <path_to_your_user_directory>/.jenkins/workspace
+
+In conf/context.xml, add the following inside of the main <Context> element, to avoid a complaint by Tomcat about "nsufficient free space available after evicting expired cache entries - consider increasing the maximum size of the cache"
+
+    <Resources cachingAllowed="true" cacheMaxSize="100000" />
 
 In the Tomcat /bin directory, create a new file, setenv.bat
 Give it this content (this is so we can connect with JMX dynamic analysis tools to Tomcat):
 set CATALINA_OPTS=%CATALINA_OPTS% -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=localhost
+
+or on MacOs, setenv.sh. Give it this content:
+export CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=localhost"
+
+and be sure to set it as executable
 
 Start up Tomcat (look in the bin directory for a "startup" file)
 
@@ -115,7 +127,7 @@ Now let's create a pipeline so it does some actual work.
 - Check the box labeled "Do not allow concurrent builds".  (We don't want race conditions in our pipeline, and we don't want excessive memory usage on this demo machine)
 - Check the box for "Sidebar links". Add a link.  Enter this:
 
-  Link URL: http://localhost:8080/demoworkspace/build/reports/bdd/cucumber-html-reports/overview-features.html
+  Link URL: http://localhost:8080/workspace/Demo/build/reports/bdd/cucumber-html-reports/overview-features.html
   Link Text: Cucumber report.
 
   Click Add Link.
@@ -125,7 +137,7 @@ Now let's create a pipeline so it does some actual work.
 
   Click Add Link.
 
-  Link URL: http://localhost:8080/demoworkspace/build/reports/dependency-check-report.html
+  Link URL: http://localhost:8080/workspace/Demo/build/reports/dependency-check-report.html
   Link Text: Dependency check report
 
   Click Add Link.
@@ -135,18 +147,28 @@ Now let's create a pipeline so it does some actual work.
 
   Click Add Link
 
-  Link URL: http://localhost:8080/demoworkspace/build/reports/jacoco/index.html
+  Link URL: http://localhost:8080/workspace/Demo/build/reports/jacoco/index.html
   Link Text: Jacoco coverage report
 
   Click Add Link
 
-  Link URL: http://localhost:8080/demoworkspace/build/reports/pitest/index.html
+  Link URL: http://localhost:8080/workspace/Demo/build/reports/pitest/index.html
   Link Text: Pitest Mutation Testing
 
   Click Add Link
 
-  Link URL: http://localhost:8080/demoworkspace/build/docs/javadoc/index.html
+  Link URL: http://localhost:8080/workspace/Demo/build/docs/javadoc/index.html
   Link Text: Javadoc
+
+  Click Add Link
+
+  Link URL: http://training:8080/workspace/Demo/perf_report/index.html
+  Link Text: Performance report
+
+  Click Add Link
+
+  Link URL: http://training:8080/workspace/Demo/build/reports/zap/zap-report.html
+  Link Text: Zap report
 
 - Under Pipeline, click on the dropdown and select "Pipeline script from SCM"
 - on the dropdown next to SCM, select Git.
@@ -155,7 +177,7 @@ Now let's create a pipeline so it does some actual work.
      Repository URL: C:\Users\byron\fake_central_repo\demo  (Yours may be a different place)
      In Branches to Build:
      Branch specifier: refs/heads/master
-     In Script Path: jenkins/JenkinsfileLocal
+     In Script Path: jenkins/Jenkinsfile
 
      Click save
 

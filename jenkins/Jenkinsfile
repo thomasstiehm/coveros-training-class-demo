@@ -43,7 +43,7 @@ pipeline {
     // These are the Behavior Driven Development (BDD) tests
     // See the files in src/bdd_test
     // These tests do not require a running system.
-    stage('Automated Acceptance Tests') {
+    stage('BDD Tests') {
       steps {
         sh './gradlew generateCucumberReports'
         // generate the code coverage report for jacoco
@@ -71,14 +71,17 @@ pipeline {
     // Move the binary over to the test environment and
     // get it running, in preparation for tests that
     // require a whole system to be running.
-    stage('Deploy to test') {
+    stage('Deploy to Test') {
       steps {
       sh './gradlew deployToTestWindowsLocal'
       // pipenv needs to be installed and on the path for this to work.
-      sh 'pipenv install'
+      sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
 
       // Wait here until the server tells us it's up and listening
       sh './gradlew waitForHeartBeat'
+
+      // clear Zap's memory for the incoming tests
+      sh 'curl http://zap/JSON/core/action/newSession -s --proxy localhost:9888'
       }
     }
 
@@ -141,7 +144,7 @@ pipeline {
     // Standards and Technology (NIST), and checks if the software
     // we are importing has any major known vulnerabilities. If so,
     // the build will halt at this point.
-    stage('Analyze security of dependencies') {
+    stage('Security: Dependency Analysis') {
       steps {
          sh './gradlew dependencyCheckAnalyze'
       }
@@ -150,7 +153,7 @@ pipeline {
     // Run Jmeter performance testing https://jmeter.apache.org/
     // This test simulates 50 users concurrently using our software
     // for a set of common tasks.
-    stage('Testing performance') {
+    stage('Performance Tests') {
       steps {
          sh './gradlew runPerfTests'
       }
@@ -166,15 +169,22 @@ pipeline {
     // happens that no matter how code is changed, the tests
     // continue to pass, which implies that the test wasn't really
     // providing any value for those lines.
-    stage('Mutation testing') {
+    stage('Mutation Tests') {
       steps {
          sh './gradlew pitest'
       }
     }
 
-    stage('Build documentation') {
+    stage('Build Documentation') {
       steps {
          sh './gradlew javadoc'
+      }
+    }
+
+    stage('Collect Zap Security Report') {
+      steps {
+        sh 'mkdir -p build/reports/zap'
+        sh 'curl http://zap/OTHER/core/other/htmlreport --proxy localhost:9888 > build/reports/zap/zap_report.html'
       }
     }
 
