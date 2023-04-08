@@ -159,16 +159,17 @@ dependencies {
 
     // a logging framework, so it becomes easily possible to see what is happening
     // in our code in realtime.
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.2'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.2'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
 
     // The following gives us the ability to use slf4j api calls.
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.13.2'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.17.1'
 
     // we'll use this as our database
     // https://mvnrepository.com/artifact/com.h2database/h2
-    localDeps group: 'com.h2database', name: 'h2', version: '1.4.200'
+    //localDeps group: 'com.h2database', name: 'h2', version: '1.4.200'
+	localDeps group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     // so we can put a copy of h2 in a convenient place
     implementation configurations.localDeps
@@ -581,6 +582,7 @@ dependencyCheck {
     cveValidForHours = 24 * 30 * 12 // about a year.
     format = 'HTML' // options are  (HTML, XML, CSV, JSON, VULN, ALL).
     failBuildOnCVSS = 8 // see https://www.first.org/cvss/specification-document#5-Qualitative-Severity-Rating-Scale
+	suppressionFile = "suppression.xml"
 }
 
 task('printReportPathsCheck') {
