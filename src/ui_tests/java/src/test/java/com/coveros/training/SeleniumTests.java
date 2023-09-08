@@ -116,6 +116,17 @@ public class SeleniumTests {
         ApiCalls.registerBook("i");
         ApiCalls.registerBook("j");
         ApiCalls.registerBorrowers("some borrower");
+        ApiCalls.registerBook("a2");
+        ApiCalls.registerBook("b2");
+        ApiCalls.registerBook("c2");
+        ApiCalls.registerBook("d2");
+        ApiCalls.registerBook("e2");
+        ApiCalls.registerBook("f2");
+        ApiCalls.registerBook("g2");
+        ApiCalls.registerBook("h2");
+        ApiCalls.registerBook("i2");
+        ApiCalls.registerBook("j2");
+        ApiCalls.registerBorrowers("some other borrower");
 
         driver.get("http://localhost:8080/demo/library.html");
 
