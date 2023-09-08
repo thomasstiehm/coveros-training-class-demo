@@ -345,7 +345,7 @@ talk("GET", "borrower")
   *
   * This is used on the "lend book" fields, to provide a better experience.
   * specifically, if there are no values to select from on a field, lock
-  * the field.  If there are between 1 and 9 values, create a dropdown.
+  * the field.  If there are between 1 and 19 values, create a dropdown.
   * otherwise, create an autocommplete mechanism - as the user types values,
   * a searchbox below the input is populated with potential values that fit.
   *
@@ -357,7 +357,7 @@ function betterUserExperienceForInput(v, extractor, input_id) {
   let receivedData = extractData(v, extractor);
   if (receivedData == null) {
     lockInput(input_id);
-  } else if (receivedData && receivedData.length > 0 && receivedData.length < 10) {
+  } else if (receivedData && receivedData.length > 0 && receivedData.length < 20) {
     addDropdown(input_id, function() {return receivedData});
   } else {
     addAutoComplete(input_id, function() {return receivedData});
