@@ -13,7 +13,7 @@ java {
 }
 
 repositories {
-    jcenter()
+    //jcenter()
     mavenCentral()
 }
 
